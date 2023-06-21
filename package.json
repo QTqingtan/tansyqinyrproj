@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "webpack-dev-server": "^4.15.0"
+  },
+  "dependencies": {
+    "axios": "^1.4.0"
+  }
+}
