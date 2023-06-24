@@ -2,10 +2,12 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
-import VueRouter from 'vue-router'
+import router from './router'
 import axios from 'axios'
 import Element from 'element-ui'
 import * as echarts from 'echarts';
+
+import './styles/index.css'
 import VueResource from 'vue-resource'
 
 
@@ -16,15 +18,8 @@ import './theme/index.css'
 
 Vue.use(Element)
 Vue.config.productionTip = false
-Vue.use(VueRouter)
 Vue.prototype.$http = axios
 
-const router = new VueRouter({
-    routes: [
-        {path: "/App", component: App, meta: {title: "QTProj"},},
-    ],
-    mode: "history"
-})
 
 // // 全局注册组件
 Vue.component("App", App);
