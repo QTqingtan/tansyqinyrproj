@@ -11,6 +11,15 @@
                     <el-menu-item index="/">数字图像处理平台</el-menu-item>
                     <!-- index要绑定路由上的path   -->
                     <el-menu-item index="/upload/50">OCR处理</el-menu-item>
+                    <el-menu-item index="/upload/51">风格转换-糖果</el-menu-item>
+                    <el-menu-item index="/upload/52">风格转换-星空</el-menu-item>
+                    <el-menu-item index="/upload/53">风格转换-毕加索</el-menu-item>
+                    <el-menu-item index="/upload/54">风格转换-缪斯</el-menu-item>
+                    <el-menu-item index="/upload/55">风格转换-马赛克</el-menu-item>
+                    <el-menu-item index="/upload/56">风格转换-神奈川冲浪里</el-menu-item>
+                    <el-menu-item index="/upload/57">风格转换-达达主义</el-menu-item>
+                    <el-menu-item index="/upload/58">风格转换-呐喊</el-menu-item>
+                    <el-menu-item index="/upload/59">风格转换-羽毛</el-menu-item>
                     <el-menu-item index="/upload/0">添加椒盐噪声</el-menu-item>
                     <el-menu-item index="/upload/1">均值平滑</el-menu-item>
                     <el-menu-item index="/upload/2">中值平滑</el-menu-item>

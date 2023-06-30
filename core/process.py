@@ -175,6 +175,24 @@ def pre_process(data_path, num, ext):
                 for j in range(2, cols-2):
                     image1[i, j] = np.sum((m1*image[i - 2:i + 3, j - 2:j + 3, k]))
         img = cv.convertScaleAbs(image1)
+    elif num==51: #风格转换-糖果
+        img=trans_1(img,data_path,ext,file_name)
+    elif num==52: #风格转换-星空
+        img=trans_2(img,data_path,ext,file_name)
+    elif num==53: #风格转换-毕加索
+        img=trans_3(img,data_path,ext,file_name)
+    elif num==54: #风格转换-缪斯
+        img=trans_4(img,data_path,ext,file_name)
+    elif num==55: #风格转换-马赛克
+        img=trans_5(img,data_path,ext,file_name)
+    elif num==56: #风格转换-神奈川冲浪里
+        img=trans_6(img,data_path,ext,file_name)
+    elif num==57: #风格转换-达达主义
+        img=trans_7(img,data_path,ext,file_name)
+    elif num==58: #风格转换-呐喊
+        img=trans_8(img,data_path,ext,file_name)
+    elif num==59: #风格转换-羽毛
+        img=trans_9(img,data_path,ext,file_name)
 
     cv.imencode(".png", img)[1].tofile(r'./tmp/draw/{}.{}'.format(file_name, ext))
 
@@ -198,3 +216,184 @@ def AddSaltPepperNoise(src, rate):
 
 
 
+def trans_1(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch('.\models\candy.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
+def trans_2(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch('.\models\starry_night.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
+def trans_3(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch('.\models\composition_vii.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
+def trans_4(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch('.\models\la_muse.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
+def trans_5(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch('.\models\mosaic.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
+def trans_6(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch('.\models\\the_wave.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
+def trans_7(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch(r'.\models\udnie.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
+def trans_8(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch('.\models\\the_scream.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
+
+def trans_9(image,data_path,ext,file_name):
+
+    # 加载模型
+    net = cv.dnn.readNetFromTorch('.\models\\feathers.t7')#选择一个模型的地址
+    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)#创建后端
+    # 读取图片
+    #image = cv.imread(data_path)
+    (h, w) = image.shape[:2]
+    blob = cv.dnn.blobFromImage(image, 1, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    # 进行计算
+    net.setInput(blob)
+    out = net.forward()
+    out = out.reshape(3, out.shape[2], out.shape[3])
+    out[0]+= 103.939
+    out[1]+= 116.779
+    out[2]+= 123.68
+    out /= 255
+    out = out.transpose(1, 2, 0)
+    out = out * 255
+    return out
