@@ -1,6 +1,7 @@
 from datetime import timedelta
 from flask import *
 from flask_cors import CORS
+from config import *
 import os
 import logging as rel_log
 import shutil
@@ -25,7 +26,8 @@ def after_request(response):
 
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg'])   # 支持两种图片
-UPLOAD_FOLDER = r'./uploads'
+
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # 解决缓存刷新问题
@@ -45,12 +47,13 @@ def allowed_file(filename):
 
 @app.route('/')
 def hello_world():
+
     return redirect(url_for('static', filename='./index.html'))
 
 
 @app.route('/upload/<int:id>', methods=['POST','GET'])
 def upload_image(id):
-    print("id", id)
+    # print("id", id)
     image = request.files['file']
     if image:
         img_path = os.path.join(app.config['UPLOAD_FOLDER'], image.filename)
@@ -59,9 +62,10 @@ def upload_image(id):
         shutil.copy(img_path, './tmp/ct')
         # pid = os.getpid()
         image_path = os.path.join('./tmp/ct', image.filename)
+        # 50 OCR
         if id == 50:
             pid = image.filename
-            ocr_text = core.main.ocr_main(image_path, image.filename.rsplit('.', 1)[1])
+            ocr_text = core.main.ocr_main(image_path)
             return jsonify({'status': 1,
                             'image_url': 'http://127.0.0.1:5000/tmp/ct/' + pid,
                             'ocr_text': ocr_text
@@ -74,7 +78,6 @@ def upload_image(id):
                             'draw_url': 'http://127.0.0.1:5000/tmp/draw/' + pid  # 应该是/tmp/draw/ 是处理后的结果
                             })
     return jsonify({'status': 0})
-
 
 
 @app.route("/download", methods=['GET'])

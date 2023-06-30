@@ -46,8 +46,26 @@
                         重新选择图像
                     </el-button>
                 </div>
-                <div class="text item">
-                    <p>{{ocrText}}</p>
+<!--                <div class="text item">-->
+<!--                    <p>{{ocrText}}</p>-->
+<!--                </div>-->
+                <div>
+                    <el-descriptions title="OCR身份证信息检测结果" direction="vertical" :column="4" border>
+
+
+                        <el-descriptions-item :column="4">
+                            <template slot="label"><i class="el-icon-user"></i>姓名</template>
+                            {{ocrText.CARD_NAME}}
+                        </el-descriptions-item>
+                        <el-descriptions-item label="民族" :span="2">{{ocrText.CARD_ETHNIC}}</el-descriptions-item>
+                        <el-descriptions-item label="性别" :span="2">{{ocrText.CARD_GENDER}}</el-descriptions-item>
+                        <el-descriptions-item :span="4">
+                            <template slot="label"><i class="el-icon-location-outline"></i>地址</template>
+                            {{ocrText.CARD_ADDR}}
+                        </el-descriptions-item>
+                        <el-descriptions-item label="出生日期">{{ocrText.CARD_YEAR}}年{{ocrText.CARD_MON}}月{{ocrText.CARD_DAY}}日</el-descriptions-item>
+                        <el-descriptions-item label="身份证id"  :span="4">{{ocrText.CARD_NUM}}</el-descriptions-item>
+                    </el-descriptions>
                 </div>
             </el-card>
 
@@ -130,6 +148,7 @@ export default {
                     this.url_1 = response.data.image_url;
                     this.srcList.push(this.url_1);
                     this.ocrText = response.data.ocr_text; //处理后的 文字返回
+                    // console.log("this.ocr_text",this.ocrText)
                     this.fullscreenLoading = false;
                     this.loading = false;
                     this.dialogTableVisible = false;

@@ -2,9 +2,7 @@ __pycache__/
 node_modules/
 .idea/
 core/__pycache__/
-core/__pycache__/__init__.cpython-36.pyc
-core/__pycache__/main.cpython-36.pyc
+tmp/draw/001pic.png
+tmp/ct/0230624141606.jpg
 core/__pycache__/process.cpython-36.pyc
-core/__pycache__/__init__.cpython-36.pyc
-core/__pycache__/process.cpython-36.pyc
-core/__pycache__/__init__.cpython-36.pyc
+tmp/draw/0230624141606.jpg

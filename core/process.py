@@ -1,5 +1,4 @@
 import os
-
 import cv2 as cv
 import numpy as np
 
@@ -36,13 +35,16 @@ def pre_process(data_path, num, ext):
         img = cv.warpAffine(img, M, (width, height))
     elif num==9: #旋转45度，缩放因子为1
         height, width, channel = img.shape
-        M=cv.getRotationMatrix2D(((width/2),(height/2)),45,1)
-        img== cv.warpAffine(img, M, (width, height))
+        M = cv.getRotationMatrix2D(((width/2),(height/2)),45,1)
+        img = cv.warpAffine(img, M, (width, height))
+
     elif num==10: #转灰度图
         img= cv.cvtColor(img,cv.COLOR_BGR2GRAY)
+
     elif num==11:#转灰度后二值化-全局阈值法
-        img= cv.cvtColor(img,cv.COLOR_BGR2GRAY)
-        ret, img = cv.threshold(img,127,255,cv.THRESH_BINARY)
+        img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        ret, img = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
+
     elif num==12: #直方图均衡化
         img= cv.cvtColor(img,cv.COLOR_BGR2GRAY)
         src = cv.resize(img, (256,256))
@@ -174,7 +176,7 @@ def pre_process(data_path, num, ext):
                     image1[i, j] = np.sum((m1*image[i - 2:i + 3, j - 2:j + 3, k]))
         img = cv.convertScaleAbs(image1)
 
-    cv.imencode(".png",img)[1].tofile(r'./tmp/draw/{}.{}'.format(file_name, ext))
+    cv.imencode(".png", img)[1].tofile(r'./tmp/draw/{}.{}'.format(file_name, ext))
 
     return data_path, file_name
 
@@ -194,8 +196,5 @@ def AddSaltPepperNoise(src, rate):
     return srcCopy
 
 
-def ocr_process(data_path, ext):
-    # TODO 完善OCR
-    ocr_text = "ocr text"
-    return ocr_text
+
 
