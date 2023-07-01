@@ -5,11 +5,8 @@ import numpy as np
 
 # 转到对应操作中处理图像
 def pre_process(data_path, num, ext):
-
     file_name = os.path.split(data_path)[1].split('.')[0]
     img = cv.imdecode(np.fromfile(data_path, dtype=np.uint8), -1)
-
-    print("num process=", num)
 
     if num == 0:  # 椒盐噪声
         img = AddSaltPepperNoise(img, 0.5)
@@ -356,6 +353,7 @@ def trans_7(image,data_path,ext,file_name):
     out = out.transpose(1, 2, 0)
     out = out * 255
     return out
+
 def trans_8(image,data_path,ext,file_name):
 
     # 加载模型

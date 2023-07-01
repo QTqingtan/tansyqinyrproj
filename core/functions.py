@@ -272,10 +272,10 @@ def find_chinese_regions(gray_img, id_rect):
     # 身份证高度
     card_height = height / (0.9044 - 0.7976)
     # 粗略算出图像中身份证上边界的y坐标
-    card_y_start = point[1] - card_height  # * 0.8
+    card_y_start = point[1] - card_height*0.8
 
     # 为了保证不丢失文字区域，姓名的相对位置保留 以身份证上边界作为起始切割点
-    new_y = card_y_start + card_height * 0.1  # 0.0967
+    new_y = card_y_start + card_height * 0.0967  # 0.0967
 
     # 容错因子，防止矩形存在倾斜导致区域重叠
     factor = 25
@@ -318,7 +318,7 @@ def horizontal_projection(binary_img):
         else:
             if continuouStartFlag:
                 continuouStartFlag = False
-                down = i+20  # - 1
+                down = i-1  # - 1
                 if down - up >= x // 20 and down-up <= x//5:  # // 10
                     # 行高小于总高1/20的抛弃
                     boundaryCoors.append([up, down])
@@ -522,7 +522,12 @@ def get_name(BinaryImg, horiBoundaryCoor, origin=None):
     if type(origin) == np.ndarray:
         cropImg, _, _, _ = crop_img_by_box(origin, box)
 
-        text = pytesseract.image_to_string(cropImg, 'chi_sim', '7')
+        # ret, cropImg = gray_to_binary(cropImg, method=1)
+        cv2.imshow("namepic", cropImg)
+        cv2.waitKey(0)
+
+        text = pytesseract.image_to_string(cropImg, lang='chi_sim', config='-psm 6')
+        # print("name-text=", text)
         text = text.replace(' ', '')
         text = text.replace('\n', '')
     return coors, text
@@ -540,28 +545,33 @@ def get_gender_ethic(BinaryImg, horiBoundaryCoor, origin=None):
         maxW = curW if curW > maxW else maxW
 
     textIndex = 0
-    # if type(origin) == np.ndarray:
-    #     for i in range(len(coors)):
-    #         box = np.int0([[coors[i][0], up], [coors[i][1], up], [coors[i][1], down], [coors[i][0], down]])
-    #         if (coors[i][1] - coors[i][0]) < maxW * 0.88:
-    #             continue
-    #
-    #         cropImg, _, _, _ = crop_img_by_box(origin, box)
-    #         # OCR识别
-    #         cv2.imshow("hanzu", cropImg)
-    #         cv2.waitKey(0)
-    #         en_char = pytesseract.image_to_string(cropImg, 'chi_sim', '7')
-    #         print("55888888:", en_char)
-    #         if en_char == '又' or en_char == '汊' or en_char == '汊':
-    #             text = '汉'
-    #             print("565", text)
-    #         elif all(u'\u4e00' <= ch and ch <= u'\u9fff' for ch in en_char):
-    #             text = en_char
-    #         textIndex += 1
+    if type(origin) == np.ndarray:
+        for i in range(len(coors)):
+            box = np.int0([[coors[i][0], up], [coors[i][1], up], [coors[i][1], down], [coors[i][0], down]])
+            if (coors[i][1] - coors[i][0]) < maxW * 0.88:
+                continue
+
+            cropImg, _, _, _ = crop_img_by_box(origin, box)
+            # OCR识别
+            # cv2.imshow("hanzu", cropImg)
+            # cv2.waitKey(0)
+            # ret, cropImg = gray_to_binary(cropImg, method=1)
+            en_char = pytesseract.image_to_string(cropImg, 'chi_sim', config='-psm 7')
+            en_char = en_char.replace(" ", "")
+            en_char = en_char.replace("\n", "")
+            # print("55888888:", en_char)
+            # print("55888888:", en_char.encode("unicode_escape"))
+            if en_char == '又' or en_char == '汊' or en_char == '史' or en_char == '叉' or en_char == '汊':
+                text = '汉'
+                # or en_char == '汉'
+                # print("565", text)
+            elif all(u'\u4e00' <= ch and ch <= u'\u9fff' for ch in en_char):
+                text = en_char
+            textIndex += 1
 
     # 默认汉族
     if text == '':
-        # print("default")
+        print("default")
         text = '汉'
 
     return coors, text
@@ -578,8 +588,10 @@ def get_address(BinaryImg, horiBoundaryCoor, origin=None):
     addr_str = ''
     if type(origin) == np.ndarray:
         cropImg, _, _, _ = crop_img_by_box(origin, box)
+        cv2.imshow("addr", cropImg)
+        cv2.waitKey(0)
         # OCR识别
-        text = pytesseract.image_to_string(cropImg, 'chi_sim', '7')
+        text = pytesseract.image_to_string(cropImg, 'chi_sim', config='-psm 6')
         if '月' in text or '年' in text:
             return coors, ''
 

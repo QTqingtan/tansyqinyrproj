@@ -9,7 +9,6 @@
                 <el-progress :percentage="percentage"></el-progress>
             <span slot="footer">请耐心等待</span>
             </el-dialog>
-
         <el-card class="box-card" style="width: 1000px">
             <div class="demo-image__preview1">
                 <div v-loading="loading"
@@ -68,17 +67,18 @@
                     </el-descriptions>
                 </div>
             </el-card>
-
-
         </el-card>
     </div>
 </template>
 
 <script>
 import axios from "axios";
-
+import prepic from "@/components/prepic.vue";
 export default {
     name: "ocr",
+  components: {
+       'prepic':prepic,
+  },
     data() {
         return {
             server_url: "http://127.0.0.1:5000",

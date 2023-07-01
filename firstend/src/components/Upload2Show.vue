@@ -140,9 +140,9 @@ export default {
             }, 30);
             let config = {
                 headers: { "Content-Type": "multipart/form-data" },
-            }; //添加请求头 TODO 这里获取this.id
-
-            axios.post(this.server_url + `/upload/${this.id}`, param, config)
+            }; //添加请求头 DONE 这里获取this.id
+            // console.log("this.id",this.id);
+            axios.post(this.server_url + `/upload/${this.$route.params.id}`, param, config)
                 .then((response) => {
                     this.percentage = 100;
                     clearInterval(timer);

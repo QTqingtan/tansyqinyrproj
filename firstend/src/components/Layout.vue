@@ -69,10 +69,9 @@
               </el-header>
               <el-main>
                   <div>
-                      <router-view />
+                      <router-view name="default" />
+                      <router-view name="footer" />
                   </div>
-
-<!--      :key="key"     -->
               </el-main>
           </el-container>
 

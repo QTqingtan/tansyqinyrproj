@@ -52,15 +52,6 @@ def detect(path):
     CARD_ETHNIC = text_dict['CARD_ETHNIC']
     CARD_ADDR = text_dict['CARD_ADDR']
 
-    # ocr_text = f'''
-    # CARD_NAME = '{CARD_NAME}'
-    # CARD_GENDER = '{CARD_GENDER}'
-    # CARD_ETHNIC = '{CARD_ETHNIC}'
-    # CARD_YEAR = '{CARD_YEAR}'
-    # CARD_MON = '{CARD_MON}'
-    # CARD_DAY = '{CARD_DAY}'
-    # CARD_ADDR = '{CARD_ADDR}'
-    # '''
     ocr_text = {
         'CARD_NUM': CARD_NUM,
         'CARD_NAME': CARD_NAME,
@@ -71,7 +62,17 @@ def detect(path):
         'CARD_DAY': CARD_DAY,
         'CARD_ADDR': CARD_ADDR
     }
+
     print(ocr_text)
 
+    # ocr_text = f'''
+    # CARD_NAME = '{CARD_NAME}'
+    # CARD_GENDER = '{CARD_GENDER}'
+    # CARD_ETHNIC = '{CARD_ETHNIC}'
+    # CARD_YEAR = '{CARD_YEAR}'
+    # CARD_MON = '{CARD_MON}'
+    # CARD_DAY = '{CARD_DAY}'
+    # CARD_ADDR = '{CARD_ADDR}'
+    # '''
     return ocr_text
 
