@@ -15,7 +15,7 @@ import axios from "axios";
 
 export default {
     name: "prepic",
-    // props: ['id'],
+    props: ['id'],
 
     data() {
         return {

@@ -17,16 +17,19 @@ def detect(path):
     a = func.cal_element_size(gray)
     element1 = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))  # 定义结构元素,MORPH_RECT矩形结构，尺寸2x2，较小尺寸用于去除噪声
     element2 = cv2.getStructuringElement(cv2.MORPH_RECT, a)  # 尺寸较大
+    # 膨胀  白色像素扩张 去除较小黑点噪声
+    dilation_1 = cv2.dilate(binary, element1, iterations=1)
+    # 腐蚀  黑色像素扩张 去除毛刺
+    erosion_1 = cv2.erode(dilation_1, element1, iterations=1)
+    # 较大腐蚀
+    erosion_2 = cv2.erode(erosion_1, element2, iterations=1)
+    # 小范围膨胀
+    dilation_2 = cv2.dilate(erosion_2, element1, iterations=1)
 
-    dilation_1 = cv2.dilate(binary, element1, iterations=1)  # 膨胀（即白色像素扩张）去除较小黑点噪声
-    erosion_1 = cv2.erode(dilation_1, element1, iterations=1)  # 腐蚀（即黑色像素扩张）
-    erosion_2 = cv2.erode(erosion_1, element2, iterations=1)  # 较大腐蚀
-    dilation_2 = cv2.dilate(erosion_2, element1, iterations=1)  # 小范围膨胀
-
-    # 4.  查找身份证可能的区域
+    # 4. 查找身份证id可能出现在什么区域
     regions = func.find_id_regions(dilation_2)
 
-    # 5.  识别身份证号码
+    # 5. 识别身份证id
     id_num, angle, id_rect = func.get_id_nums(regions, gray)
     CARD_NUM = id_num
     if(int(id_num[16]) % 2 == 0):

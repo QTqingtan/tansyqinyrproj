@@ -27,25 +27,26 @@ for (let id = 0; id < 40; id++) {
       routess.push(route);
 }
 
-// const routesss = [];
-//
-// // 对应我们的50个操作
-// for (let id = 51; id <= 59; id++) {
-//       const route = {
-//           path: `/upload/:id`,
-//           components: {
-//               default: Upload2Show,
-//               footer: prepic,
-//           },
-//           props: true,
-//           meta: { id: id},
-//       };
-//       routesss.push(route);
-// }
+const routesss = [];
+
+// 对应我们的50个操作
+for (let id = 51; id <= 59; id++) {
+      const route = {
+          path: `/upload/:id`,
+          components: {
+              default: Upload2Show,
+              footer: prepic,
+          },
+          props: true,
+          meta: { id: id},
+      };
+      routesss.push(route);
+}
 
 const routes = [
     {
         path: '/',
+        redirect:'/upload/50',
         component: Layout,
         hidden: true,
     },
@@ -60,7 +61,7 @@ const routes = [
                 name: 'OCR',
             },
             ...routess,
-            // ...routesss,
+            ...routesss,
         ]
     },
 ];

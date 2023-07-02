@@ -122,7 +122,7 @@ class myThreshold():
             return Threshold - 5  # 存在误差
         return Threshold
 
-    # ISODATA (intermeans)  阈值算法
+    # ISODATA  阈值算法
     def getIsoDataThreshold(self, imgSrc):
 
         HistGram = self.__getHisGram(imgSrc)
@@ -164,55 +164,59 @@ class myThreshold():
     def getAlgos(self):
         algos = {
             0: 'getMinimumThreshold',  # 谷底最小值
-            1: 'get1DMaxEntropyThreshold', # 一维最大熵
+            1: 'get1DMaxEntropyThreshold',  # 一维最大熵
             2: 'getIsoDataThreshold', # intermeans
             # 3: 'getKittlerMinError', # kittler 最小错误
-            4: 'getIntermodesThreshold', # 双峰平均值的阈值
+            4: 'getIntermodesThreshold',  # 双峰平均值的阈值
         }
         return algos
 
 
-# 灰度图像二值化
+# 图像二值化 传入灰度图
 def gray_to_binary(gray, method=1):
-    j = method  # 选择阈值获取算法0,1,2,3,4,5
+    j = method  # 0-5间 阈值获取算法
     thr = myThreshold()
-    # 选择阈值获取算法0,1,2,3,4,5
+    # 0-5间 阈值获取算法
     algos = thr.getAlgos()[j]
     threshold = getattr(thr, algos)(gray)
-    # 输出：阈值、二值化数据
+    # get 阈值 + 二值化数据
     ret, binary = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
     return ret, binary
 
 
-# 根据图片大小粗略计算腐蚀 或膨胀所需核的大小
+# 根据图片大小算出大致腐蚀or膨胀所需核的大小
 def cal_element_size(img):
     sp = img.shape
-    width = sp[1]  # width(colums) of image
+    width = sp[1]
     kenaly = math.ceil((width / 400.0) * 12)
     kenalx = math.ceil((kenaly / 5.0) * 4)
     a = (int(kenalx), int(kenaly))
     return a
 
 
-# 查找身份证号码可能的区域列表
+# 查找身份证id可能的区域 存起来
 def find_id_regions(img):
+    # 返回值
     regions = []
-    # 1. 查找轮廓
+
+    # 1. 检测所有轮廓  cv2.RETR_LIST 效果不好
+    # 但 RETR_TREE 就要做更多筛选 因为内层轮廓还可以继续包含内嵌轮廓
     contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # 2. 筛选那些面积小的
+
+    # 2. 筛选 遍历获得的所有轮廓
     for i in range(len(contours)):
         cnt = contours[i]
-        # 计算该轮廓的面积
+        # 先算该轮廓的px面积
         area = cv2.contourArea(cnt)
-        # 面积小的都筛选掉
+        # 抛弃面积太小的
         if(area < 1000):
             continue
-        # 找到最小的矩形，该矩形可能有方向
+        # 找到最小的矩形 调整方向
         rect = cv2.minAreaRect(cnt)
-        # 计算高和宽
+        # 区域高 宽判定
         width = rect[1][0]
         height = rect[1][1]
-        # 筛选那些太细的矩形 留下扁的
+        # id区域是扁状的 只留下扁的 大致10倍往上18位数字 保险用5吧
         if height > width:
             if height < width * 5:
                 continue
@@ -248,36 +252,35 @@ def crop_img_by_box(img, box):
     y2 = max(Ys)
     height = y2 - y1
     width = x2 - x1
-    # 裁剪
+    # crop
     crop_img = img[y1:y1 + height, x1:x1 + width]
     return crop_img, (x1, y1), width, height
 
 
-# 根据身份证号码的位置推断姓名、性别、名族、出生年月、住址的位置
-# :param cardNumPoint1: tuple 身份证号 所在 矩形的左上角坐标
-# :param width: int 身份证号码所处的矩形的宽
-# :param height: int 身份证号码所处的矩形的高
+# 根据身份证id的位置推 姓名、民族、addr的位置坐标
 def find_chinese_regions(gray_img, id_rect):
-    # 获取身份证号 坐标
+    # 获取身份证id 的位置坐标
     box = cv2.boxPoints(id_rect)
     box = np.int64(box)
-    # 通过顶点获得身份证号码坐标
+
+    # 通过顶点获得身份证id坐标
     _, point, width, height = crop_img_by_box(gray_img, box)
 
     new_x = point[0] - (width / 18) * 5.5
     new_width = int(width / 5 * 4)
 
-    box = []  # 通过身份证号 位置  推断其他区域位置
-    # new_y = cardNumPoint1[1] - height * 6.5
-    # 身份证高度
+    # 通过身份证id 的坐标  推断其他区域坐标
+    # 做一个相对计算就是了
+    box = []
+    # 身份证 height
     card_height = height / (0.9044 - 0.7976)
-    # 粗略算出图像中身份证上边界的y坐标
+    # approximately 图像中身份证上边界的y坐标-纵
     card_y_start = point[1] - card_height*0.8
 
-    # 为了保证不丢失文字区域，姓名的相对位置保留 以身份证上边界作为起始切割点
+    # 为了保证不丢失文字区域 姓名的相对位置保留 以身份证上边界作为起始切割点
     new_y = card_y_start + card_height * 0.0967  # 0.0967
 
-    # 容错因子，防止矩形存在倾斜导致区域重叠
+    # 容错因子 防止矩形不正 导致区域重叠
     factor = 25
     new_y = card_y_start if card_y_start > factor else factor
     new_height = card_height * (0.7616 - 0.0967) + card_height * 0.0967
@@ -294,13 +297,15 @@ def find_chinese_regions(gray_img, id_rect):
     return crop_img_by_box(gray_img, box)
 
 
-# 水平投影边界坐标
+# 找到 每行文字的高
 def horizontal_projection(binary_img):
     # 水平行边界坐标
     boundaryCoors = []
     (x, y) = binary_img.shape
+    # 这一列
     a = [0 for z in range(0, x)]
     for i in range(0, x):
+        # 对这一行
         for j in range(0, y):
             if binary_img[i, j] == 0:
                 a[i] = a[i] + 1
@@ -341,7 +346,7 @@ def horizontal_projection(binary_img):
 def get_id_nums(regions, gray_img):
     # 二值化处理
     ret, binary = gray_to_binary(gray_img, method=1)
-    # 获得身份证号码
+    # 获得身份证id
     cardNum=''
     angle = 0
     for rect in regions:
@@ -352,27 +357,30 @@ def get_id_nums(regions, gray_img):
             width = a
             height = b
             pts2 = np.float32([[0, height], [0, 0], [width, 0], [width, height]])
-        else:
+        else:  # 反过来的图
             width = b
             height = a
             angle = 90 + angle
             pts2 = np.float32([[width, height], [0, height], [0, 0], [width, 0]])
 
-        # 透视变换（将图像投影到一个新的视平面）
+        # 透视变换
+        # 就是视角调整 投影到一个新的视平面
         box = cv2.boxPoints(rect)
-        pts1 = np.float32(box)  # 透视变换前位置
-        # 变换矩阵（根据透视前位置和透视后位置计算）
+        # 透视变换前位置
+        pts1 = np.float32(box)
+        # 变换矩阵 根据透视前位置和透视后位置计算
         M = cv2.getPerspectiveTransform(pts1, pts2)
-        cropImg = cv2.warpPerspective(binary, M, (int(width), int(height)))  # 输出身份证号码区域透视后的图
+        # crop_img 身份证id区域 透视后的图 垂直视角
+        crop_img = cv2.warpPerspective(binary, M, (int(width), int(height)))
 
         # 计算腐蚀和膨胀的核大小
         kenalx = kenaly = int(math.ceil((height / 100.0)))
         # 膨胀和腐蚀操作
         kenal = cv2.getStructuringElement(cv2.MORPH_RECT, (kenalx, kenaly))
-        dilation = cv2.dilate(cropImg, kenal, iterations=1)
+        dilation = cv2.dilate(crop_img, kenal, iterations=1)
         erosion = cv2.erode(dilation, kenal, iterations=1)
 
-        # OCR识别
+        # 做OCR识别 要处理特殊空格
         cardNum = pytesseract.image_to_string(erosion)
 
         cardNum.replace(" ", "")
@@ -396,9 +404,8 @@ def get_chinese_char(gray_char_area_img):
     ret, binary = gray_to_binary(gray_char_area_img, method=1)
 
     # 2. 膨胀和腐蚀操作，得到可以查找矩形的图片
-    # kenalx = kenaly = int(math.ceil((binary.shape[1] / 100.0))) # 计算腐蚀和膨胀的核大小
-    # a= (kenalx , kenaly)
-    a = cal_element_size(binary)  # 获取核大小
+    # 获取核大小
+    a = cal_element_size(binary)
     element1 = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     element2 = cv2.getStructuringElement(cv2.MORPH_RECT, a)
 
@@ -409,15 +416,16 @@ def get_chinese_char(gray_char_area_img):
     erosion_2 = cv2.erode(erosion_1, element2, iterations=1)
     dilation_2 = cv2.dilate(erosion_2, element1, iterations=1)
 
-    # 获取各个文字行起始坐标
     boundaryCoors = horizontal_projection(dilation_2)
     if not boundaryCoors:
-        raise('获取各个文字行起始坐标失败！')
+        raise('获取各行起始坐标失败！')
 
     # 垂直投影对行内字符进行切割
-    textLine = 0  # 有效文本行序号
+    # 文本行序号
+    textLine = 0
     CARD_NAME = CARD_ETHNIC = CARD_ADDR = ''
     for textLine, boundaryCoor in enumerate(boundaryCoors):
+        # 依次从上到下
         if textLine == 0:
             vertiCoors, text = get_name(binary, boundaryCoor, gray_char_area_img)  # 获得垂直字符切割坐标 和 字符
             # print("457name:", text)
@@ -428,121 +436,127 @@ def get_chinese_char(gray_char_area_img):
             CARD_ETHNIC = text
             # print("439enthic", CARD_ETHNIC)
         else:
-            # print("438")
             vertiCoors, text = get_address(binary, boundaryCoor, gray_char_area_img)  # 获得垂直字符切割坐标 和 字符
             CARD_ADDR += text
 
     return {'CARD_NAME': CARD_NAME, 'CARD_ETHNIC': CARD_ETHNIC, 'CARD_ADDR':CARD_ADDR}
 
 
-# 文字通用切割处理
-def chars_cut(BinaryImg, horiBoundaryCoor):
+# 文字切割 就是每一列一列列看 分块
+def chars_cut(binary_img, horiBoundaryCoor):
 
     # 列边界坐标
-    vertiBoundaryCoors = []
+    verti_boundary_coors = []
     up, down = horiBoundaryCoor
-    lineheight = down - up
-
-    (x, y) = BinaryImg.shape
+    line_height = down - up
+    # x-h y-w
+    (x, y) = binary_img.shape
+    # 一行 先全置0
     a = [0 for z in range(0, y)]
-
+    
+    # 对每一列累加binary置1的有内容的像素和
     for j in range(0, y):
         for i in range(up, down):
-            if BinaryImg[i, j] == 0:
+            if binary_img[i, j] == 0:
                 a[j] = a[j] + 1
 
     # 连续区域标识
     continuouStartFlag = False
     left = right = 0
 
-    pixelNum = 0  # 统计每个列的像素数量
-    maxWidth = 0  # 最宽的字符长度
+    # 统计每列的像素数量
+    pixel_sum = 0
+    max_width = 0  # 最宽的字符长度
     for i in range(0, y):
-        # for i in range((down - a[j]), down):
-        #     BinaryImg[i, j] = 0
-        pixelNum += a[i]  # 统计像素
+        # 统计每列像素
+        pixel_sum += a[i]
         if a[i] > 0:
             if not continuouStartFlag:
                 continuouStartFlag = True
                 left = i
+        # 对应binary图片这一列都没有 1
         else:
             if continuouStartFlag:
                 continuouStartFlag = False
                 right = i
                 if right - left > 0:
-                    if pixelNum > lineheight * (right - left) // 10:
-                        curW = right - left
-                        maxWidth = curW if curW > maxWidth else maxWidth
-                        vertiBoundaryCoors.append([left, right])
-                    pixelNum = 0  # 遇到边界，归零
+                    # 不是第一个块了
+                    if pixel_sum > line_height * (right - left) // 10:
+                        cur_width = right - left
+                        max_width = cur_width if cur_width > max_width else max_width
+                        verti_boundary_coors.append([left, right])
+                    # 遇到边界，归零
+                    pixel_sum = 0
 
-    return vertiBoundaryCoors, maxWidth
+    return verti_boundary_coors, max_width
 
 
-def _chineseCharHandle(BinaryImg, horiBoundaryCoor):
-    # 获得该行字符边界坐标
+# 获得该行字符边界坐标
+def _chineseCharHandle(binary_img, horiBoundaryCoor):
     fator = 0.9
-    vertiBoundaryCoors, maxWidth = chars_cut(BinaryImg, horiBoundaryCoor)
-    newVertiBoundaryCoors = []  # 字符合并后的纵向坐标
-
-    charNum = len(vertiBoundaryCoors)
+    verti_boundary_coors, max_width = chars_cut(binary_img, horiBoundaryCoor)
+    # verti_boundary_coors每个字符左右坐标边界
+    # 字符合并后的纵向坐标
+    new_verti_boundary_coors = []
+    charNum = len(verti_boundary_coors)
 
     i = 0
     while i < charNum:
         if i + 1 >= charNum:
-            newVertiBoundaryCoors.append(vertiBoundaryCoors[i])
+            new_verti_boundary_coors.append(verti_boundary_coors[i])
             break
 
-        curCharWidth = vertiBoundaryCoors[i][1] - vertiBoundaryCoors[i][0]
-        if curCharWidth < maxWidth * fator:
-            if vertiBoundaryCoors[i + 1][1] - vertiBoundaryCoors[i][0] <= maxWidth*(2 - fator):
-                newVertiBoundaryCoors.append([vertiBoundaryCoors[i][0], vertiBoundaryCoors[i + 1][1]])
-                i += 1
-            elif curCharWidth > maxWidth / 4:
-                newVertiBoundaryCoors.append(vertiBoundaryCoors[i])
-        else:
-            newVertiBoundaryCoors.append(vertiBoundaryCoors[i])
+        cur_char_width = verti_boundary_coors[i][1] - verti_boundary_coors[i][0]
 
+        if cur_char_width < max_width * fator:
+            # 合并
+            if verti_boundary_coors[i + 1][1] - verti_boundary_coors[i][0] <= max_width*(2 - fator):
+                new_verti_boundary_coors.append([verti_boundary_coors[i][0], verti_boundary_coors[i + 1][1]])
+                i += 1
+            elif cur_char_width > max_width / 4:
+                new_verti_boundary_coors.append(verti_boundary_coors[i])
+        else:
+            new_verti_boundary_coors.append(verti_boundary_coors[i])
         i += 1
-    return newVertiBoundaryCoors
+    return new_verti_boundary_coors
 
 
 # 身份证姓名
-def get_name(BinaryImg, horiBoundaryCoor, origin=None):
+def get_name(binary_img, horiBoundaryCoor, origin=None):
 
-    coors = _chineseCharHandle(BinaryImg, horiBoundaryCoor)
+    # 名字的宽度
+    coors = _chineseCharHandle(binary_img, horiBoundaryCoor)
     if len(coors) == 0:
-        return coors, '没有检测出名字'
+        return coors, '没有检测到名字'
 
-    up, down = horiBoundaryCoor
-    # box = np.int64([[coors[0][0], up], [coors[-1][1], up], [coors[-1][1], down], [coors[0][0], down]])
+    (up, down) = horiBoundaryCoor
     box = np.int0([[coors[0][0], up], [coors[-1][1], up], [coors[-1][1], down], [coors[0][0], down]])
 
     text = ''
     if type(origin) == np.ndarray:
-        cropImg, _, _, _ = crop_img_by_box(origin, box)
+        crop_img, _, _, _ = crop_img_by_box(origin, box)
 
-        # ret, cropImg = gray_to_binary(cropImg, method=1)
-        cv2.imshow("namepic", cropImg)
-        cv2.waitKey(0)
+        # ret, crop_img = gray_to_binary(crop_img, method=1)
+        # cv2.imshow("namepic", crop_img)
+        # cv2.waitKey(0)
 
-        text = pytesseract.image_to_string(cropImg, lang='chi_sim', config='-psm 6')
+        text = pytesseract.image_to_string(crop_img, lang='chi_sim', config='-psm 6')
         # print("name-text=", text)
         text = text.replace(' ', '')
         text = text.replace('\n', '')
     return coors, text
 
 
-# 身份证性别 民族
-def get_gender_ethic(BinaryImg, horiBoundaryCoor, origin=None):
+# 民族信息
+def get_gender_ethic(binary_img, horiBoundaryCoor, origin=None):
     text = ''
-    coors = _chineseCharHandle(BinaryImg, horiBoundaryCoor)
+    coors = _chineseCharHandle(binary_img, horiBoundaryCoor)
     up, down = horiBoundaryCoor
 
     maxW = 0
     for coo in coors:
-        curW = coo[1] - coo[0]
-        maxW = curW if curW > maxW else maxW
+        cur_width = coo[1] - coo[0]
+        maxW = cur_width if cur_width > maxW else maxW
 
     textIndex = 0
     if type(origin) == np.ndarray:
@@ -551,12 +565,12 @@ def get_gender_ethic(BinaryImg, horiBoundaryCoor, origin=None):
             if (coors[i][1] - coors[i][0]) < maxW * 0.88:
                 continue
 
-            cropImg, _, _, _ = crop_img_by_box(origin, box)
+            crop_img, _, _, _ = crop_img_by_box(origin, box)
             # OCR识别
-            # cv2.imshow("hanzu", cropImg)
+            # cv2.imshow("hanzu", crop_img)
             # cv2.waitKey(0)
-            # ret, cropImg = gray_to_binary(cropImg, method=1)
-            en_char = pytesseract.image_to_string(cropImg, 'chi_sim', config='-psm 7')
+            # ret, crop_img = gray_to_binary(crop_img, method=1)
+            en_char = pytesseract.image_to_string(crop_img, 'chi_sim', config='-psm 7')
             en_char = en_char.replace(" ", "")
             en_char = en_char.replace("\n", "")
             # print("55888888:", en_char)
@@ -565,6 +579,7 @@ def get_gender_ethic(BinaryImg, horiBoundaryCoor, origin=None):
                 text = '汉'
                 # or en_char == '汉'
                 # print("565", text)
+            # 汉字范围
             elif all(u'\u4e00' <= ch and ch <= u'\u9fff' for ch in en_char):
                 text = en_char
             textIndex += 1
@@ -573,33 +588,30 @@ def get_gender_ethic(BinaryImg, horiBoundaryCoor, origin=None):
     if text == '':
         print("default")
         text = '汉'
-
     return coors, text
 
 
 # 身份证地址处理
-def get_address(BinaryImg, horiBoundaryCoor, origin=None):
+def get_address(binary_img, horiBoundaryCoor, origin=None):
 
-    coors = _chineseCharHandle(BinaryImg, horiBoundaryCoor)
+    coors = _chineseCharHandle(binary_img, horiBoundaryCoor)
     up, down = horiBoundaryCoor
     box = np.int0([[coors[0][0], up], [coors[-1][1], up], [coors[-1][1], down], [coors[0][0], down]])
 
     text = ''
     addr_str = ''
     if type(origin) == np.ndarray:
-        cropImg, _, _, _ = crop_img_by_box(origin, box)
-        cv2.imshow("addr", cropImg)
-        cv2.waitKey(0)
+        crop_img, _, _, _ = crop_img_by_box(origin, box)
+        # cv2.imshow("addr", crop_img)
+        # cv2.waitKey(0)
         # OCR识别
-        text = pytesseract.image_to_string(cropImg, 'chi_sim', config='-psm 6')
+        text = pytesseract.image_to_string(crop_img, 'chi_sim', config='-psm 6')
         if '月' in text or '年' in text:
             return coors, ''
 
         addr_str = ''.join(str(x) for x in text)
-        # print("addr_str", addr_str)
-
         addr_str = addr_str.replace("\n", "")
         addr_str = addr_str.replace(" ", "")
-        # print("22222:", addr_str)
+        # print("600000000:", addr_str)
     return coors, addr_str
 
