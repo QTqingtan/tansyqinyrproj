@@ -19,10 +19,14 @@ def pre_process(data_path, num, ext):
         img = cv.GaussianBlur(img,(11,11),0)
 
     elif num == 4: # 图像锐化-拉普拉斯算子
-        img=cv.Laplacian(img,cv.CV_64F)
+        gray=cv.cvtColor(img,cv.COLOR_BGR2GRAY)
+        img=cv.Laplacian(gray,cv.CV_16S,ksize=3)
+        img=cv.convertScaleAbs(img)
     elif num==5: #图像锐化-Sobel算子水平方向
-        img=cv.Sobel(img,cv.CV_64F,1,0,ksize=5)
+        gray=cv.cvtColor(img,cv.COLOR_BGR2GRAY)
+        img=cv.Sobel(gray,cv.CV_64F,1,0,ksize=5)
     elif num==6: #图像锐化-Sobel算子垂直方向
+        gray=cv.cvtColor(img,cv.COLOR_BGR2GRAY)
         img=cv.Sobel(img,cv.CV_64F,0,1,ksize=5)
     elif num==7: #将图像用双线性插值法扩大图像
         img = cv.resize(img, (0, 0), fx=2, fy=2, interpolation=cv.INTER_NEAREST)
@@ -33,7 +37,8 @@ def pre_process(data_path, num, ext):
     elif num==9: #旋转45度，缩放因子为1
         height, width, channel = img.shape
         M = cv.getRotationMatrix2D(((width/2),(height/2)),45,1)
-        img = cv.warpAffine(img, M, (width, height))
+        tmp=cv.warpAffine(img, M, (2*width, 2*height))
+        img=tmp
 
     elif num==10: #转灰度图
         img= cv.cvtColor(img,cv.COLOR_BGR2GRAY)
@@ -63,6 +68,7 @@ def pre_process(data_path, num, ext):
         M = cv.getPerspectiveTransform(post1, post2)
         img=cv.warpPerspective(src,M,(200,200))
     elif num==16: #图像翻转
+        gray=cv.cvtColor(img,cv.COLOR_BGR2GRAY)
         img=255-img
     elif num==17: #rgb转hsv
         img=cv.cvtColor(img,cv.COLOR_RGB2HSV)
@@ -158,7 +164,7 @@ def pre_process(data_path, num, ext):
         grayImage = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
         grayImage = cv.GaussianBlur(grayImage, (5, 5), 0, 0)
         dst = cv.Laplacian(grayImage, cv.CV_16S,ksize=3)
-        img == cv.convertScaleAbs(dst)
+        img = cv.convertScaleAbs(dst)
     elif num == 39:  # LoG边缘提取
         img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         image = cv.copyMakeBorder(img, 2, 2, 2, 2, borderType=cv.BORDER_REPLICATE)

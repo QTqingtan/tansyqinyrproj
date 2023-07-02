@@ -272,7 +272,7 @@ def find_chinese_regions(gray_img, id_rect):
     # 通过身份证id 的坐标  推断其他区域坐标
     # 做一个相对计算就是了
     box = []
-    # 身份证 height
+    # 身份证 总height
     card_height = height / (0.9044 - 0.7976)
     # approximately 图像中身份证上边界的y坐标-纵
     card_y_start = point[1] - card_height*0.8
@@ -287,8 +287,11 @@ def find_chinese_regions(gray_img, id_rect):
 
     # 文字下边界坐标
     new_y_low = (new_y + new_height) if (new_y + new_height) <= point[1] - factor else point[1] - factor
+    # 姓名位置
     box.append([new_x, new_y])
+    # 民族位置 or 性别位置
     box.append([new_x + new_width, new_y])
+    # 以下为addr位置 因为可能多行
     box.append([new_x + new_width, new_y_low])
     box.append([new_x, new_y_low])
 
@@ -347,7 +350,7 @@ def get_id_nums(regions, gray_img):
     # 二值化处理
     ret, binary = gray_to_binary(gray_img, method=1)
     # 获得身份证id
-    cardNum=''
+    card_id=''
     angle = 0
     for rect in regions:
         angle = rect[2]
@@ -381,24 +384,24 @@ def get_id_nums(regions, gray_img):
         erosion = cv2.erode(dilation, kenal, iterations=1)
 
         # 做OCR识别 要处理特殊空格
-        cardNum = pytesseract.image_to_string(erosion)
+        card_id = pytesseract.image_to_string(erosion)
 
-        cardNum.replace(" ", "")
-        cardNum.strip()
-        cardNum = ''.join(char for char in cardNum if char.isalnum())
-        if not cardNum:
+        card_id.replace(" ", "")
+        card_id.strip()
+        card_id = ''.join(char for char in card_id if char.isalnum())
+        if not card_id:
             continue
 
-        if is_identi_number(cardNum):
+        if is_identi_number(card_id):
             print('身份证有效')
-            return cardNum, angle, rect
+            return card_id, angle, rect
         else:
-            print('无效身份证=', cardNum)
+            print('无效身份证=', card_id)
             continue
     raise('身份证识别失败！！！')
 
 
-# 分析汉字区域 and 识别提取
+# 根据提取的区域 识别提取各部分汉字 民族+addr
 def get_chinese_char(gray_char_area_img):
     # 二值化处理
     ret, binary = gray_to_binary(gray_char_area_img, method=1)
@@ -524,15 +527,16 @@ def _chineseCharHandle(binary_img, horiBoundaryCoor):
 # 身份证姓名
 def get_name(binary_img, horiBoundaryCoor, origin=None):
 
-    # 名字的宽度
+    # 名字区域的宽度
     coors = _chineseCharHandle(binary_img, horiBoundaryCoor)
     if len(coors) == 0:
         return coors, '没有检测到名字'
-
+    # 名字区域高度
     (up, down) = horiBoundaryCoor
     box = np.int0([[coors[0][0], up], [coors[-1][1], up], [coors[-1][1], down], [coors[0][0], down]])
 
     text = ''
+    # 裁剪图片
     if type(origin) == np.ndarray:
         crop_img, _, _, _ = crop_img_by_box(origin, box)
 

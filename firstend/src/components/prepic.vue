@@ -26,7 +26,7 @@ export default {
     created: function () {
         // console.log('../../public/img/'+this.id+'.jpg');
         // console.log(this.id) undefined
-        console.log(this.$route.params.id);
+        // console.log(this.$route.params.id);
     },
 
     methods: {
