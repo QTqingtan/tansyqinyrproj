@@ -84,9 +84,9 @@ Pycharm 或其他idea中 run `app.py` 。
 
 ## 4.1 OCR提取身份证图片文本信息
 
-![](uploads\readmePic\OCRcard1.png)
+![](uploads/readmePic/OCRcard1.png)
 
-![](uploads\readmePic\OCRcard2.png)
+![](uploads/readmePic/OCRcard2.png)
 
 
 
@@ -94,37 +94,33 @@ Pycharm 或其他idea中 run `app.py` 。
 
 ### 糖果
 
-![](firstend\public\img\51.jpg)
+![](firstend/public/img/51.jpg)
 
 ### 星空
-
-![](firstend\public\img\52.jpg)
+![](firstend/public/img/52.jpg)
 
 ### 毕加索
 
-![](firstend\public\img\53.jpg)
+![](firstend/public/img/53.jpg)
 
 ### 缪斯
-
-![](firstend\public\img\54.jpg)
+![](firstend/public/img/54.jpg)
 
 ### 马赛克
 
-![](firstend\public\img\55.jpg)
+![](firstend/public/img/55.jpg)
 
 ### 神奈川冲浪里
 
-![](firstend\public\img\56.jpg)
+![](firstend/public/img/56.jpg)
 
 ### 达达主义
-
-![](firstend\public\img\57.jpg)
+![](firstend/public/img/57.jpg)
 
 ### 呐喊
 
-![](firstend\public\img\58.jpg)
+![](firstend/public/img/58.jpg)
 
 ### 羽毛
-
-![](firstend\public\img\59.jpg)
+![](firstend/public/img/59.jpg)
 
